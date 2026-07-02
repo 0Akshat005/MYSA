@@ -31,6 +31,49 @@ const TESTIMONIALS = [
   { name: 'Rahul V.', city: 'Hyderabad', service: 'Dry Cleaning', quote: 'Exceptional service. My suits look brand new after every clean.' },
 ]
 
+const STEPS = [
+  {
+    title: 'Book on WhatsApp',
+    eyebrow: 'Step 1',
+    desc: 'Customer messages Mysa on WhatsApp or taps "Schedule Pickup"; bot confirms slot instantly.',
+    orderStatus: 'Placed',
+    orderStatusColor: '#F5B83B',
+  },
+  {
+    title: 'Doorstep Pickup',
+    eyebrow: 'Step 2',
+    desc: 'Rider collects garments at the chosen time; customer gets a WhatsApp pickup confirmation with item count.',
+    orderStatus: 'Picked Up',
+    orderStatusColor: '#107575',
+  },
+  {
+    title: 'Steam Ironing',
+    eyebrow: 'Step 3',
+    desc: 'Garments are steam-ironed and quality-checked; customer receives a "your clothes are ready" status update.',
+    orderStatus: 'In Progress',
+    orderStatusColor: '#F5B83B',
+  },
+  {
+    title: 'Delivered to Your Door',
+    eyebrow: 'Step 4',
+    desc: 'Rider delivers on time; customer gets a delivery confirmation and can rate the service — all inside WhatsApp.',
+    orderStatus: 'Delivered',
+    orderStatusColor: '#27AE60',
+  }
+];
+
+const CHAT_MESSAGES = [
+  { step: 0, sender: 'user', text: 'Hi Mysa, I need a steam iron pickup.', time: '12:30 PM' },
+  { step: 0, sender: 'bot', text: 'Hi Arjun! Let\'s schedule it. Today 4 PM or tomorrow 9 AM?', time: '12:30 PM' },
+  { step: 1, sender: 'user', text: 'Today 4 PM.', time: '12:31 PM' },
+  { step: 1, sender: 'bot', text: 'Confirmed! Rider Rahul will arrive at 4 PM.', time: '12:31 PM' },
+  { step: 1, sender: 'bot', text: '📦 Order #MY-9042: 10 garments collected.', time: '4:05 PM' },
+  { step: 2, sender: 'bot', text: '✨ Care Update: Your 10 garments have been steam-ironed and packed.', time: '5:30 PM' },
+  { step: 3, sender: 'bot', text: '🚚 Out for delivery! Rahul is on his way.', time: '6:00 PM' },
+  { step: 3, sender: 'bot', text: '🎉 Delivered! Enjoy your fresh clothes.', time: '6:15 PM' },
+  { step: 3, sender: 'user', text: 'Excellent service! Everything is perfectly crisp. ⭐⭐⭐⭐⭐', time: '6:18 PM' },
+];
+
 function useTypingEffect() {
   const [text, setText] = useState('')
   const [phraseIdx, setPhraseIdx] = useState(0)
@@ -80,6 +123,86 @@ export default function Home({ openModal }) {
   const [postcode, setPostcode] = useState('')
   const [serviceStatus, setServiceStatus] = useState(null) // null | 'serviceable' | 'not-serviceable'
   const [isScrollingPaused, setIsScrollingPaused] = useState(false)
+
+  const [activeStep, setActiveStep] = useState(0)
+  const [isVideoMuted, setIsVideoMuted] = useState(true)
+  const videoRef = useRef(null)
+  const sectionRef = useRef(null)
+  const intervalRef = useRef(null)
+
+  // Auto cycle steps every 5 seconds
+  useEffect(() => {
+    intervalRef.current = setInterval(() => {
+      setActiveStep((prev) => (prev + 1) % 4)
+    }, 5000)
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current)
+    }
+  }, [])
+
+  const handleStepClick = (index) => {
+    setActiveStep(index)
+    // Reset interval when user clicks manually to give them time to read
+    if (intervalRef.current) clearInterval(intervalRef.current)
+    intervalRef.current = setInterval(() => {
+      setActiveStep((prev) => (prev + 1) % 4)
+    }, 5000)
+  }
+
+  // Lazy load video
+  useEffect(() => {
+    const currentVideo = videoRef.current
+    const currentSection = sectionRef.current
+    if (!currentVideo || !currentSection) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          if (!currentVideo.src) {
+            currentVideo.src = '/videos/how-mysa-works.mp4'
+          }
+          currentVideo.play().catch((err) => {
+            console.log('Video autoplay blocked or interrupted:', err)
+          })
+        } else {
+          currentVideo.pause()
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    observer.observe(currentSection)
+    return () => {
+      if (currentSection) observer.unobserve(currentSection)
+    }
+  }, [])
+
+  // Auto scroll chat body
+  useEffect(() => {
+    const chatBody = document.getElementById('whatsapp-message-body')
+    if (chatBody) {
+      chatBody.scrollTop = chatBody.scrollHeight
+    }
+  }, [activeStep])
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !videoRef.current.muted
+      setIsVideoMuted(videoRef.current.muted)
+    }
+  }
+
+  const handleWatchDemo = () => {
+    const mockup = document.getElementById('phone-mockup-container')
+    if (mockup) {
+      mockup.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+    if (videoRef.current) {
+      videoRef.current.muted = false
+      setIsVideoMuted(false)
+      videoRef.current.play().catch((err) => console.log(err))
+    }
+  }
 
   const NAGPUR_PINCODES_MIN = 440001
   const NAGPUR_PINCODES_MAX = 440037
@@ -220,7 +343,214 @@ export default function Home({ openModal }) {
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
+      {/* HOW IT WORKS (NEW PREMIUM SECTION) */}
+      <section className={`section-padding ${styles.premiumHowSection}`} id="how-interactive" ref={sectionRef}>
+        <div className={styles.premiumHowContainer}>
+          
+          <div className={styles.premiumHowHeader}>
+            <RevealSection className={styles.premiumHowEyebrowWrap}>
+              <div className="eyebrow">How It Works</div>
+            </RevealSection>
+            <RevealSection delay="delay-1">
+              <h2 className={styles.premiumHowTitle}>
+                From WhatsApp message to<br /><em>wrinkle-free clothes — in 4 steps.</em>
+              </h2>
+            </RevealSection>
+            <RevealSection delay="delay-2">
+              <p className={styles.premiumHowSubheadline}>
+                Steam-perfect. Time-perfect. Picked up from your door.
+              </p>
+            </RevealSection>
+            
+            <RevealSection delay="delay-3" className={styles.premiumHowHeaderCtas}>
+              <button onClick={handleWatchDemo} className="btn-ghost">
+                Watch How It Works
+              </button>
+              <button onClick={() => openModal('booking')} className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                Schedule Pickup <span>→</span>
+              </button>
+            </RevealSection>
+          </div>
+
+          <div className={styles.premiumHowVisualContainer}>
+            
+            {/* Left Floating Card - Order Card */}
+            <div className={`${styles.floatingCardLeft} ${styles.orderCard}`}>
+              <div className={styles.cardHeader}>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                <span>Order #MY-9042</span>
+              </div>
+              <div className={styles.cardRow}>
+                <strong>Customer:</strong>
+                <span>Arjun Mehta</span>
+              </div>
+              <div className={styles.cardRow}>
+                <strong>Garments:</strong>
+                <span>10 Items (Hanger Pack)</span>
+              </div>
+              <div className={styles.cardRow}>
+                <strong>Total Amount:</strong>
+                <span>₹450</span>
+              </div>
+              <div className={styles.cardStatusContainer}>
+                <span className={styles.statusLabel}>Status:</span>
+                <span 
+                  className={styles.statusPill} 
+                  style={{ 
+                    backgroundColor: `${STEPS[activeStep].orderStatusColor}15`, 
+                    color: STEPS[activeStep].orderStatusColor,
+                    borderColor: `${STEPS[activeStep].orderStatusColor}30` 
+                  }}
+                >
+                  <span className={styles.statusDot} style={{ backgroundColor: STEPS[activeStep].orderStatusColor }} />
+                  {STEPS[activeStep].orderStatus}
+                </span>
+              </div>
+            </div>
+
+            {/* Center Phone Mockup Wrapper */}
+            <div className={styles.mockupWrapper} id="phone-mockup-container">
+              {/* Hand Silhouette Graphic */}
+              <div className={styles.handContainer}>
+                <svg className={styles.handSvg} viewBox="0 0 400 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M350 480 C320 400, 290 350, 240 330 C200 310, 160 330, 140 360 C120 390, 100 440, 100 480" stroke="rgba(16, 117, 117, 0.15)" strokeWidth="12" fill="none" strokeLinecap="round" />
+                  <path d="M220 330 C200 320, 180 320, 160 330 C140 340, 130 350, 120 370" stroke="rgba(16, 117, 117, 0.2)" strokeWidth="8" strokeLinecap="round" />
+                </svg>
+              </div>
+
+              {/* Fingertips wrapping around left bezel */}
+              <div className={styles.fingertips}>
+                <div className={`${styles.finger} ${styles.finger1}`} />
+                <div className={`${styles.finger} ${styles.finger2}`} />
+                <div className={`${styles.finger} ${styles.finger3}`} />
+                <div className={`${styles.finger} ${styles.finger4}`} />
+              </div>
+
+              {/* Actual Phone Frame */}
+              <div className={styles.phoneFrame}>
+                <div className={styles.phoneNotch} />
+                <div className={styles.phoneScreen}>
+                  
+                  {/* Video Background Layer */}
+                  <div className={styles.screenVideoWrapper}>
+                    <video
+                      ref={videoRef}
+                      loop
+                      muted
+                      playsInline
+                      poster="/assets/hero_ironing.jpg"
+                      className={styles.screenVideo}
+                      aria-label="Mysa service delivery demonstration video"
+                    />
+                    <div className={styles.videoOverlayGradient} />
+                  </div>
+
+                  {/* WhatsApp UI Layer */}
+                  <div className={styles.whatsappUi}>
+                    {/* Header */}
+                    <div className={styles.waHeader}>
+                      <div className={styles.waHeaderLeft}>
+                        <span className={styles.waBackBtn}>←</span>
+                        <div className={styles.waAvatar}>M</div>
+                        <div className={styles.waUserInfo}>
+                          <span className={styles.waName}>Mysa Care</span>
+                          <span className={styles.waStatus}>
+                            <span className={styles.waStatusDot} />
+                            online
+                          </span>
+                        </div>
+                      </div>
+                      <div className={styles.waHeaderIcons}>
+                        <span className={styles.waIcon}>📞</span>
+                        <span className={styles.waIcon}>⋮</span>
+                      </div>
+                    </div>
+
+                    {/* Messages Body */}
+                    <div className={styles.waBody} id="whatsapp-message-body">
+                      {CHAT_MESSAGES.filter(m => m.step <= activeStep).map((msg, i) => (
+                        <div key={i} className={`${styles.waMessage} ${msg.sender === 'user' ? styles.waUser : styles.waBot}`}>
+                          <div className={styles.waMessageBubble}>
+                            {msg.text.split('\n').map((line, idx) => <div key={idx}>{line}</div>)}
+                            <span className={styles.waMessageTime}>{msg.time}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Unmute / Mute Button Overlay */}
+                  <button 
+                    onClick={toggleMute} 
+                    className={styles.muteButton} 
+                    aria-label={isVideoMuted ? "Unmute video" : "Mute video"}
+                  >
+                    {isVideoMuted ? '🔇' : '🔊'}
+                  </button>
+
+                </div>
+              </div>
+            </div>
+
+            {/* Right Floating Card - Stats Card */}
+            <div className={`${styles.floatingCardRight} ${styles.statsCard}`}>
+              <div className={styles.statsHeader}>
+                <strong>Service Quality</strong>
+              </div>
+              <div className={styles.donutWrapper}>
+                <svg className={styles.donutChart} viewBox="0 0 36 36">
+                  <path
+                    className={styles.donutBg}
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path
+                    className={styles.donutVal}
+                    strokeDasharray="99.4, 100"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                </svg>
+                <div className={styles.donutText}>
+                  <strong>99.4%</strong>
+                </div>
+              </div>
+              <div className={styles.statsLabelContainer}>
+                <span className={styles.statsTitle}>On-Time Delivery</span>
+                <span className={styles.statsSub}>12,450+ garments ironed</span>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Step description panels (cycling or clickable tabs) */}
+          <div className={styles.stepsTabsContainer}>
+            {STEPS.map((step, idx) => (
+              <div 
+                key={idx} 
+                onClick={() => handleStepClick(idx)}
+                className={`${styles.stepTab} ${activeStep === idx ? styles.activeTab : ''}`}
+              >
+                <div className={styles.tabHeader}>
+                  <span className={styles.tabNumber}>{step.eyebrow}</span>
+                  <h3 className={styles.tabTitle}>{step.title}</h3>
+                </div>
+                <p className={styles.tabDesc}>{step.desc}</p>
+                <div className={styles.progressBarWrapper}>
+                  <div 
+                    className={styles.progressBar} 
+                    style={{ 
+                      width: activeStep === idx ? '100%' : activeStep > idx ? '100%' : '0%',
+                      transition: activeStep === idx ? 'width 5s linear' : 'width 0.3s ease'
+                    }} 
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </section>
+
+      {/* RESTORED THE MYSA PROCESS */}
       <section className={`section-padding ${styles.howSection}`} id="how">
         <RevealSection className={styles.sectionHeader}>
           <div className="eyebrow" style={{ color: 'var(--brand-sage)' }}>The Mysa Process</div>
