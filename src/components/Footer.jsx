@@ -109,7 +109,15 @@ export default function Footer({ openModal }) {
           <a href="#">Terms</a>
           <a href="#">Cookies</a>
         </div>
-        <p>Made with care in India 🇮🇳</p>
+        <div className={styles.bottomRight}>
+          <p>Made with care in India 🇮🇳</p>
+          <p>
+            Developed and Managed by{' '}
+            <a href="https://bizleap.in/" target="_blank" rel="noopener noreferrer" className={styles.bizleapLink}>
+              BIZLEAP
+            </a>
+          </p>
+        </div>
       </div>
     </footer>
   )

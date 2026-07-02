@@ -71,6 +71,23 @@
 .bottomLinks a { color: var(--text-white); text-decoration: none; transition: color 0.2s; text-transform: uppercase; letter-spacing: 0.5px; font-size: 11px; }
 .bottomLinks a:hover { color: var(--brand-gold); }
 
+.bottomRight {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.bizleapLink {
+  color: var(--brand-gold);
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.bizleapLink:hover {
+  text-decoration: underline;
+  color: #fff;
+}
+
 .addressLink {
   display: flex; gap: 10px; align-items: flex-start;
   color: var(--text-white); font-size: 14px; line-height: 1.6;
@@ -88,4 +105,5 @@
   .grid { gap: 40px; flex-direction: column; }
   .ctaTitle { font-size: 28px; }
   .bottom { flex-direction: column; text-align: center; }
+  .bottomRight { text-align: center; }
 }
