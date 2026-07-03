@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import heroImg from '../../assets/hero_ironing.jpg'
+import heroImg from '../../assets/hero_ironing.png'
 import premiumIroningImg from '../../assets/premium_steam_ironing.png'
 
 import styles from './Home.module.css'

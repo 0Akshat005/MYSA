@@ -13,6 +13,10 @@
   max-width: 800px;
 }
 
+.pageWide {
+  max-width: 1280px;
+}
+
 .title {
   font-size: clamp(36px, 5vw, 56px);
   font-family: var(--font-display);
@@ -95,28 +99,93 @@
   color: var(--brand-sage-dark);
 }
 
+/* Sticky Layout Container */
+.stickyLayout {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  margin-top: 48px;
+}
+
+@media (min-width: 1024px) {
+  .stickyLayout {
+    flex-direction: row;
+    gap: 80px;
+    align-items: flex-start;
+  }
+}
+
+/* Left Column: Image that sticks */
+.stickyColumn {
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .stickyColumn {
+    width: 40%;
+    flex-shrink: 0;
+    position: sticky;
+    top: 140px;
+  }
+}
+
+.stickyImageContainer {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(27, 74, 66, 0.1);
+  position: relative;
+}
+
+.stickyImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Right Column: Scrolling steps */
+.scrollColumn {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+@media (min-width: 1024px) {
+  .scrollColumn {
+    width: 60%;
+    padding-bottom: 200px;
+  }
+}
+
+/* Restyle the step rows */
 .stepRow {
   display: flex;
-  gap: 32px;
-  background: #fff;
-  padding: 40px;
+  flex-direction: column;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  padding: 48px;
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   transition: transform var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
 }
 
 .stepRow:hover {
-  transform: translateY(-6px);
+  transform: translateY(-4px);
   box-shadow: var(--shadow-hover);
 }
 
 .stepNumber {
-  font-size: 48px;
+  font-size: 56px;
   font-family: var(--font-display);
   font-style: italic;
   color: var(--brand-gold);
-  line-height: 1;
+  line-height: 0.8;
   flex-shrink: 0;
+  opacity: 0.9;
 }
 
 .formCard {
