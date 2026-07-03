@@ -5,7 +5,7 @@ import steamIroningImg from '../../assets/steam_ironing_hero.png'
 
 export default function Services({ openModal }) {
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${styles.pageWide}`}>
       <h1 className={styles.title}>Our Services</h1>
       <p className={styles.subtitle}>We treat every garment with the exact care it requires. From daily wear to delicate couture, our processes are designed to extend the life of your wardrobe.</p>
       
